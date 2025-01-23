@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using sambackend.Models;
-using sambackend.Services; // Add the service namespace
+using sambackend.Services; 
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-using sambackend.Dto;
+
 namespace sambackend.Controllers
 {
     [ApiController]
@@ -11,83 +11,95 @@ namespace sambackend.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IConfiguration _configuration;
 
-        public UserController(IUserService userService )
+        public UserController(IUserService userService)
         {
-            _userService = userService; // Initialize IUserService
-           
+            _userService = userService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+       public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(new { message = "Invalid registration data.", errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
+    }
+
+    try
+    {
+        var user = await _userService.RegisterUserAsync(registerDto);
+        var token = await _userService.GenerateJwtTokenAsync(user);
+
+        return Ok(new
         {
-            try
-            {
-                var user = await _userService.RegisterUserAsync(registerDto);
-                var token = _userService.GenerateJwtToken(user);
-
-                return Ok(new 
-                { 
-                    status = "Success",
-                    message = "Registration successful.",
-                    token = token
-                });
-            }
-            catch (Exception ex) when (ex.Message.Contains("Email is already in use"))
-            {
-                return Conflict(new { message = "Email is already in use." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred during registration.", details = ex.Message });
-            }
-        }
-
-
+            status = "Success",
+            message = "Registration successful.",
+            token = token
+        });
+    }
+    catch (InvalidEmailException ex)
+    {
+        return BadRequest(new { message = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { message = "An error occurred during registration.", details = ex.Message });
+    }
+}
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var user = await _userService.LoginUserAsync(loginDto);
-            if (user == null)
+            try
+            {
+                var user = await _userService.LoginUserAsync(loginDto);
+                var token = await _userService.GenerateJwtTokenAsync(user); 
+
+                return Ok(new { token });
+            }
+            catch (InvalidCredentialsException)
             {
                 return Unauthorized(new { message = "Invalid email or password." });
             }
-
-            var token = _userService.GenerateJwtToken(user);
-            return Ok(new { token });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred during login.", details = ex.Message });
+            }
         }
 
         [HttpPost("logout")]
         [Authorize]
         public IActionResult Logout()
         {
-            // Simulate logout process (e.g., invalidate the session or token)
+            // Implement proper logout logic (e.g., invalidate tokens in a distributed cache)
             return Ok(new
             {
                 status = "Success",
                 message = "You have been logged out successfully."
             });
         }
-       
-        [HttpGet("profile")]
-        [Authorize]
-        public async Task<IActionResult> GetUserProfile()
-        {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!Guid.TryParse(userId, out Guid userGuid))
-                return BadRequest(new { message = "Invalid user ID." });
 
-            try
+        [HttpGet("{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetUserProfile(Guid userId)
+        {
+          var user = await _userService.GetUserProfileAsync.FindAsync(userId);
+
+            if(user == null)
             {
-                var profile = await _userService.GetUserProfileAsync(userGuid);
-                return Ok(profile);
+                throw new Exception("user not found.");
             }
-            catch (Exception ex)
+            return new User
             {
-                return NotFound(new { message = ex.Message });
-            }
+                
+                FullName = user.FullName,
+                Email = user.Email,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                Address = user.Address,
+                PhoneNumber = user.PhoneNumber,
+            };
         }
+        
     }
 }

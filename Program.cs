@@ -4,6 +4,8 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using sambackend.Data;
 using sambackend.Services;
+using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,30 +18,38 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Configure JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]);
 
+// Add the JwtSettings configuration from appsettings.json
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+
+// Now, retrieve the JwtSettings from the configuration to access key, issuer, and audience
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+})
+.AddJwtBearer(options =>
 {
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = false; // For development, set to true in production
     options.SaveToken = true;
+
+    // Get JwtSettings from configuration
+    var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
+    var key = Encoding.UTF8.GetBytes(jwtSettings.Key); // Convert the key into bytes
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"], // Access issuer here
-        ValidAudience = jwtSettings["Audience"], // Access audience here
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        ValidIssuer = jwtSettings.Issuer, // Access issuer here
+        ValidAudience = jwtSettings.Audience, // Access audience here
+        IssuerSigningKey = new SymmetricSecurityKey(key) // Set the signing key
     };
 });
-builder.Services.AddScoped<IUserService, UserService>();
 
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

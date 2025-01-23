@@ -1,36 +1,48 @@
+
 using sambackend.Data; 
-using sambackend.Models; // To resolve RegisterDto and User
+using sambackend.Models; 
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
+using System.Security.Claims; 
+using Microsoft.IdentityModel.Tokens; 
+using System.Text; 
+using System.IdentityModel.Tokens.Jwt; 
+using Microsoft.Extensions.Options;
 using BCrypt.Net;
-using System.Security.Claims; // For Claim
-using Microsoft.IdentityModel.Tokens; // For SigningCredentials, SecurityAlgorithms
-using System.Text; // For Encoding
-using System.IdentityModel.Tokens.Jwt; // For JwtSecurityToken, JwtSecurityTokenHandler
-
 namespace sambackend.Services
 {
     public class UserService : IUserService
     {
         private readonly DataContext _context;
+        private readonly JwtSettings _jwtSettings; 
 
-        public UserService(DataContext context)
+        public UserService(DataContext context, IOptions<JwtSettings> jwtSettings) 
         {
             _context = context;
+            _jwtSettings = jwtSettings.Value; 
         }
 
         public async Task<User> RegisterUserAsync(RegisterDto registerDto)
         {
-            // Check if the email already exists
+            if (string.IsNullOrEmpty(registerDto.Email) || string.IsNullOrEmpty(registerDto.Password) 
+                || string.IsNullOrEmpty(registerDto.FullName)) 
+            {
+                throw new ArgumentException("Missing required fields.");
+            }
+
+            if (!IsValidEmail(registerDto.Email)) 
+            {
+                throw new InvalidEmailException("Invalid email format.");
+            }
+
             if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
             {
                 throw new Exception("Email is already in use.");
             }
 
-            // Hash the password
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+          
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password); // Use BCrypt for hashing
 
-            // Create a new user
             var user = new User
             {
                 FullName = registerDto.FullName,
@@ -44,77 +56,82 @@ namespace sambackend.Services
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
-            return GenerateJwtToken(user);
+            return user;
         }
 
-        // Method for generating JWT Token
-        public string GenerateJwtToken(User user)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("fullName", user.FullName)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("your-jwt-secret-key"));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: "your-issuer",
-                audience: "your-audience",
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-    public async Task<User> LoginUserAsync(LoginDto loginDto)
-   {
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-    if (user == null)
+      public Task<string> GenerateJwtTokenAsync(User user)
     {
-        throw new Exception("Invalid Email or Password.");
-    }
-    if (!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+      var claims = new[]
     {
-        throw new Exception("Invalid Email or Password.");
-    }
-
-    string token = GenerateJwtToken(user);
-    var storeToken = new storeToken
-    {
-        Id = Guid.NewGuid(),
-        Email = user.Email,
-        Token = token
+        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim("fullName", user.FullName)
     };
-    _context.storeToken.Add(storeToken);
-    await _context.SaveChangesAsync();
 
-    return user;
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+    var token = new JwtSecurityToken(
+        issuer: _jwtSettings.Issuer,
+        audience: _jwtSettings.Audience,
+        claims: claims,
+        expires: DateTime.Now.AddHours(1),
+        signingCredentials: creds
+    );
+
+    return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
 }
 
-      public async Task<GetUserProfile> GetUserProfileAsync(int userId)
+        public async Task<User> LoginUserAsync(LoginDto loginDto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            if (user == null)
+            {
+                throw new InvalidCredentialsException("Invalid email or password.");
+            }
+
+            // Verify password using Argon2
+            if(!BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            {
+                throw new InvalidCredentialsException("Invalid email or password.");
+            }
+
+            return user;
+        }
+
+        public async Task<User> GetUserProfileAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+            return new GetUserProfile
+            {
+                FullName = user.FullName,
+                Email = user.Email,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                Address = user.Address,
+                PhoneNumber = user.PhoneNumber
+            };
+        }
+
+        private bool IsValidEmail(string email)
+        {
+            // Add your email validation logic here
+            // For example, use a regular expression or a dedicated email validation library
+            return true; 
+        }
+    }
+
+    public class InvalidEmailException : Exception
     {
-       var user = await _context.Users.FindAsync(userId);
-     if (user == null)
-     {
-        throw new Exception("User not found.");
-     }
-      return new GetUserProfile
-      {
-        FullName = user.FullName,
-        Email = user.Email,
-        BirthDate = user.BirthDate,
-        Gender = user.Gender,
-        Address = user.Address,
-        PhoneNumber = user.PhoneNumber
-       };
-     
+        public InvalidEmailException(string message) : base(message) { }
+    }
 
-        } 
-
+    public class InvalidCredentialsException : Exception
+    {
+        public InvalidCredentialsException(string message) : base(message) { }
     }
 }
