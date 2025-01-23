@@ -1,0 +1,6 @@
+@sambackend_HostAddress = http://localhost:5040
+
+GET {{sambackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

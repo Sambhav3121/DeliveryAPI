@@ -1,0 +1,7 @@
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.csproj.AssemblyReference.cache
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.GeneratedMSBuildEditorConfig.editorconfig
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.AssemblyInfoInputs.cache
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.AssemblyInfo.cs
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.csproj.CoreCompileInputs.cache
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.MvcApplicationPartsAssemblyInfo.cs
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.MvcApplicationPartsAssemblyInfo.cache
