@@ -16,7 +16,7 @@ public class DishService : IDishService
     public async Task<IEnumerable<Dish>> GetDishesAsync(
         List<DishCategory>? categories, 
         bool vegetarian, 
-        string sorting, 
+        SortingOption sorting, 
         int page, 
         int pageSize)
     {
@@ -37,13 +37,13 @@ public class DishService : IDishService
         // Apply sorting
         query = sorting switch
         {
-            "NameAsc" => query.OrderBy(d => d.Name),
-            "NameDesc" => query.OrderByDescending(d => d.Name),
-            "PriceAsc" => query.OrderBy(d => d.Price),
-            "PriceDesc" => query.OrderByDescending(d => d.Price),
-            "RatingAsc" => query.OrderBy(d => d.Rating),
-            "RatingDesc" => query.OrderByDescending(d => d.Rating),
-            _ => query.OrderBy(d => d.Name) // Default sorting
+            SortingOption.NameAsc => query.OrderBy(d => d.Name),
+        SortingOption.NameDesc => query.OrderByDescending(d => d.Name),
+        SortingOption.PriceAsc => query.OrderBy(d => d.Price),
+        SortingOption.PriceDesc => query.OrderByDescending(d => d.Price),
+        SortingOption.RatingAsc => query.OrderBy(d => d.Rating),
+        SortingOption.RatingDesc => query.OrderByDescending(d => d.Rating),
+        _ => query.OrderBy(d => d.Name)
         };
 
         // Apply pagination
@@ -52,4 +52,10 @@ public class DishService : IDishService
 
         return pagedDishes;
     }
+    public async Task<Dish?> GetDishByIdAsync(Guid id)
+{
+    // Find the dish by ID in the database
+    return await _context.Dishes.FirstOrDefaultAsync(d => d.Id == id);
+}
+
 }

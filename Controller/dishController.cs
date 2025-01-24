@@ -30,38 +30,42 @@ namespace sambackend.Controllers
 public async Task<IActionResult> GetDishes(
     [FromQuery, SwaggerParameter("Available values: Wok, Pizza, Soup, Dessert, Drink.")] List<DishCategory>? categories = null,
     [FromQuery, SwaggerParameter("Filter dishes by vegetarian option (default: false).")] bool vegetarian = false,
-    [FromQuery, SwaggerParameter("Available values: NameAsc, NameDesc, PriceAsc, PriceDesc, RatingAsc, RatingDesc.")] string sorting = "NameAsc",
+    [FromQuery, SwaggerParameter("Available values: NameAsc, NameDesc, PriceAsc, PriceDesc, RatingAsc, RatingDesc.")] SortingOption sorting = SortingOption.NameAsc,
     [FromQuery, SwaggerParameter("Specify the page number for pagination (default: 1).")] int page = 1,
     [FromQuery] int pageSize = 5)
 {
         {
-            // Validate sorting parameter
-            var validSortOptions = new[] { "NameAsc", "NameDesc", "PriceAsc", "PriceDesc", "RatingAsc", "RatingDesc" };
-            if (!validSortOptions.Contains(sorting))
-                return BadRequest("Invalid sorting option.");
-
-            // Call the DishService to retrieve the filtered and sorted list of dishes
+            
             var dishes = await _dishService.GetDishesAsync(categories, vegetarian, sorting, page, pageSize);
 
-            return Ok(dishes); // Return the dishes as a JSON response
+            return Ok(dishes); 
         } 
     
              }
+    [HttpGet("{id:guid}")]
+[SwaggerOperation(Summary = "Get a single dish by its ID.")]
+[SwaggerResponse(200, "Dish found.", typeof(Dish))]
+[SwaggerResponse(404, "Dish not found.")]
+public async Task<IActionResult> GetDishById([FromRoute] Guid id)
+{
+    // Call the service to retrieve the dish by ID
+    var dish = await _dishService.GetDishByIdAsync(id);
+
+    if (dish == null)
+    {
+        // Return 404 if the dish is not found
+        return NotFound("Dish not found."); 
+    }
+
+    // Return the dish if found
+    return Ok(dish);
+}
+
+   
+   
     }
 }
 
-            // Get a single dish by ID
-   /*     [HttpGet("{id}")]
-        public async Task<IActionResult> GetDish(Guid id)
-        {
-            var dish = _dishService.Dishes.Find(id);
-            if (dish == null)
-                return NotFound("Dish not found");
-            return Ok(dish);
-        }
+    
         
         
-
-    }
-}
-*/
