@@ -26,11 +26,5 @@ namespace sambackend.Models
         public DishCategory Category { get; set; } 
     }
 
-    public enum DishCategory
-    {
-        Pizza,
-        Pasta,
-        Salad,
-    }
 }
 

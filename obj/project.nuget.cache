@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "IqwkFYuqOsE=",
+  "dgSpecHash": "thLR76vXhKM=",
   "success": true,
   "projectFilePath": "/Users/sambhavbajaj/Desktop/samBackend/sambackend/sambackend.csproj",
   "expectedPackageFiles": [
@@ -46,6 +46,7 @@
     "/Users/sambhavbajaj/.nuget/packages/npgsql/9.0.2/npgsql.9.0.2.nupkg.sha512",
     "/Users/sambhavbajaj/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.3/npgsql.entityframeworkcore.postgresql.9.0.3.nupkg.sha512",
     "/Users/sambhavbajaj/.nuget/packages/swashbuckle.aspnetcore/7.2.0/swashbuckle.aspnetcore.7.2.0.nupkg.sha512",
+    "/Users/sambhavbajaj/.nuget/packages/swashbuckle.aspnetcore.annotations/7.2.0/swashbuckle.aspnetcore.annotations.7.2.0.nupkg.sha512",
     "/Users/sambhavbajaj/.nuget/packages/swashbuckle.aspnetcore.swagger/7.2.0/swashbuckle.aspnetcore.swagger.7.2.0.nupkg.sha512",
     "/Users/sambhavbajaj/.nuget/packages/swashbuckle.aspnetcore.swaggergen/7.2.0/swashbuckle.aspnetcore.swaggergen.7.2.0.nupkg.sha512",
     "/Users/sambhavbajaj/.nuget/packages/swashbuckle.aspnetcore.swaggerui/7.2.0/swashbuckle.aspnetcore.swaggerui.7.2.0.nupkg.sha512",

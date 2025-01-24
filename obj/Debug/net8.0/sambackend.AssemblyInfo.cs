@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("sambackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+233662f5c2c86816ab70aaa306637ae872209a8b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+806b56eca283f0b0363709676b48ed967c6531a5")]
 [assembly: System.Reflection.AssemblyProductAttribute("sambackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("sambackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

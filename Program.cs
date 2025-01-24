@@ -50,6 +50,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDishService, DishService>();
+
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

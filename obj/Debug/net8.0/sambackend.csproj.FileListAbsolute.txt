@@ -144,3 +144,4 @@
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.pdb
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.genruntimeconfig.cache
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/ref/sambackend.dll
+/Users/sambhavbajaj/Desktop/samBackend/sambackend/bin/Debug/net8.0/Swashbuckle.AspNetCore.Annotations.dll
