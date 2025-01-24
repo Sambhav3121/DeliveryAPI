@@ -99,23 +99,6 @@ namespace sambackend.Services
             return user;
         }
 
-        public async Task<User> GetUserProfileAsync(Guid userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-            return new GetUserProfile
-            {
-                FullName = user.FullName,
-                Email = user.Email,
-                BirthDate = user.BirthDate,
-                Gender = user.Gender,
-                Address = user.Address,
-                PhoneNumber = user.PhoneNumber
-            };
-        }
 
         private bool IsValidEmail(string email)
         {

@@ -12,8 +12,8 @@ using sambackend.Data;
 namespace sambackend.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20250123122023_dishtable")]
-    partial class dishtable
+    [Migration("20250124065143_AddDishTable")]
+    partial class AddDishTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,23 +25,39 @@ namespace sambackend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("StoreToken", b =>
+            modelBuilder.Entity("sambackend.Models.Dish", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Email")
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("Image")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("double precision");
+
+                    b.Property<bool>("Vegetarian")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
-                    b.ToTable("StoreTokens");
+                    b.ToTable("Dishes");
                 });
 
             modelBuilder.Entity("sambackend.Models.User", b =>

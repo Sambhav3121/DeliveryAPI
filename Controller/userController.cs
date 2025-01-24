@@ -79,27 +79,7 @@ namespace sambackend.Controllers
             });
         }
 
-        [HttpGet("{userId}")]
-        [Authorize]
-        public async Task<IActionResult> GetUserProfile(Guid userId)
-        {
-          var user = await _userService.GetUserProfileAsync.FindAsync(userId);
-
-            if(user == null)
-            {
-                throw new Exception("user not found.");
-            }
-            return new User
-            {
-                
-                FullName = user.FullName,
-                Email = user.Email,
-                BirthDate = user.BirthDate,
-                Gender = user.Gender,
-                Address = user.Address,
-                PhoneNumber = user.PhoneNumber,
-            };
-        }
+       
         
     }
 }
