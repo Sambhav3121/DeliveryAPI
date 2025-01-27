@@ -6,52 +6,63 @@ using sambackend.Data;
 using sambackend.Services;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using System.Security.Claims;
 
-var builder = WebApplication.CreateBuilder(args);
+   var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
-// Configure PostgreSQL connection
-builder.Services.AddDbContext<DataContext>(options => 
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen();
+
+    builder.Services.AddDbContext<DataContext>(options => 
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure JWT Authentication
+     builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
-// Add the JwtSettings configuration from appsettings.json
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
-
-// Now, retrieve the JwtSettings from the configuration to access key, issuer, and audience
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false; // For development, set to true in production
-    options.SaveToken = true;
-
-    // Get JwtSettings from configuration
-    var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
-    var key = Encoding.UTF8.GetBytes(jwtSettings.Key); // Convert the key into bytes
-
-    options.TokenValidationParameters = new TokenValidationParameters
+     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings.Issuer, // Access issuer here
-        ValidAudience = jwtSettings.Audience, // Access audience here
-        IssuerSigningKey = new SymmetricSecurityKey(key) // Set the signing key
-    };
-});
+        options.RequireHttpsMetadata = false; 
+        options.SaveToken = true;
 
+        var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
+        var key = Encoding.UTF8.GetBytes(jwtSettings.Key);
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+
+            // ✅ Ensure `NameIdentifier` is properly extracted
+            NameClaimType = ClaimTypes.NameIdentifier
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                Console.WriteLine($"Extracted User ID from JWT: {userIdClaim}"); // ✅ Debugging
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT Authentication Failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+
+// ✅ Register Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDishService, DishService>();
-
+builder.Services.AddScoped<IBasketService, BasketService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -88,7 +99,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ✅ Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -97,7 +108,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthentication(); // Make sure to use authentication
+app.UseAuthentication(); 
 app.UseAuthorization();
 
 app.MapControllers();

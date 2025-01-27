@@ -13,7 +13,7 @@ namespace sambackend.Dto
         public string Description { get; set; }
 
         [Required]
-        public double Price { get; set; }
+        public decimal Price { get; set; }
 
         public string Image { get; set; }
 
@@ -23,12 +23,6 @@ namespace sambackend.Dto
 
         public DishCategory Category { get; set; }
 
-        public enum DishCategory
-        {
-            Pizza,
-            Pasta,
-            Salad,
-            
-        }
+      
     }
 }

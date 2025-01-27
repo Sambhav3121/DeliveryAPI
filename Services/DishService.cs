@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using sambackend.Data;
 using sambackend.Models;
@@ -38,12 +41,12 @@ public class DishService : IDishService
         query = sorting switch
         {
             SortingOption.NameAsc => query.OrderBy(d => d.Name),
-        SortingOption.NameDesc => query.OrderByDescending(d => d.Name),
-        SortingOption.PriceAsc => query.OrderBy(d => d.Price),
-        SortingOption.PriceDesc => query.OrderByDescending(d => d.Price),
-        SortingOption.RatingAsc => query.OrderBy(d => d.Rating),
-        SortingOption.RatingDesc => query.OrderByDescending(d => d.Rating),
-        _ => query.OrderBy(d => d.Name)
+            SortingOption.NameDesc => query.OrderByDescending(d => d.Name),
+            SortingOption.PriceAsc => query.OrderBy(d => d.Price),
+            SortingOption.PriceDesc => query.OrderByDescending(d => d.Price),
+            SortingOption.RatingAsc => query.OrderBy(d => d.Rating),
+            SortingOption.RatingDesc => query.OrderByDescending(d => d.Rating),
+            _ => query.OrderBy(d => d.Name)
         };
 
         // Apply pagination
@@ -52,10 +55,10 @@ public class DishService : IDishService
 
         return pagedDishes;
     }
-    public async Task<Dish?> GetDishByIdAsync(Guid id)
-{
-    // Find the dish by ID in the database
-    return await _context.Dishes.FirstOrDefaultAsync(d => d.Id == id);
-}
 
+    // ✅ Updated method for fetching a dish by ID
+    public async Task<Dish?> GetDishByIdAsync(Guid dishId)
+    {
+        return await _context.Dishes.FindAsync(dishId);
+    }
 }
