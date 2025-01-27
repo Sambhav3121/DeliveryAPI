@@ -25,19 +25,16 @@ public class DishService : IDishService
     {
         IQueryable<Dish> query = _context.Dishes;
 
-        // Filter by categories if provided
         if (categories != null && categories.Any())
         {
             query = query.Where(d => categories.Contains(d.Category));
         }
 
-        // Filter by vegetarian option
         if (vegetarian)
         {
             query = query.Where(d => d.Vegetarian);
         }
 
-        // Apply sorting
         query = sorting switch
         {
             SortingOption.NameAsc => query.OrderBy(d => d.Name),
@@ -49,14 +46,12 @@ public class DishService : IDishService
             _ => query.OrderBy(d => d.Name)
         };
 
-        // Apply pagination
         int skip = (page - 1) * pageSize;
         var pagedDishes = await query.Skip(skip).Take(pageSize).ToListAsync();
 
         return pagedDishes;
     }
 
-    // ✅ Updated method for fetching a dish by ID
     public async Task<Dish?> GetDishByIdAsync(Guid dishId)
     {
         return await _context.Dishes.FindAsync(dishId);

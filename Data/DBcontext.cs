@@ -10,27 +10,13 @@ namespace sambackend.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Dish> Dishes { get; set; }
-        public DbSet<Basket> Baskets { get; set; }
-        public DbSet<BasketItem> BasketItems { get; set; } // ✅ Register BasketItems
+        public DbSet<Cart> Carts{ get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure BasketItem relationships
-            modelBuilder.Entity<BasketItem>()
-                .HasOne(bi => bi.Basket)
-                .WithMany(b => b.Items)
-                .HasForeignKey(bi => bi.BasketId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<BasketItem>()
-                .HasOne(bi => bi.Dish)
-                .WithMany()
-                .HasForeignKey(bi => bi.DishId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ✅ Seed Dish data (unchanged from your original code)
+           
             modelBuilder.Entity<Dish>()
                 .Property(d => d.Id)
                 .ValueGeneratedOnAdd();

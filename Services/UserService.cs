@@ -111,6 +111,16 @@ namespace sambackend.Services
             return user;
         }
 
+      public async Task LogoutUserAsync(Guid userId)
+{
+    var user = await _context.Users.FindAsync(userId);
+    if (user == null)
+        throw new Exception("User not found.");
+
+    
+}
+
+
         public async Task<User> GetUserProfileAsync(Guid userId)
         {
             _logger.LogInformation($"Fetching user profile for ID: {userId}");

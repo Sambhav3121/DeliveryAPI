@@ -37,8 +37,6 @@ using System.Security.Claims;
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(key),
-
-            // ✅ Ensure `NameIdentifier` is properly extracted
             NameClaimType = ClaimTypes.NameIdentifier
         };
 
@@ -47,7 +45,7 @@ using System.Security.Claims;
             OnTokenValidated = context =>
             {
                 var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                Console.WriteLine($"Extracted User ID from JWT: {userIdClaim}"); // ✅ Debugging
+                Console.WriteLine($"Extracted User ID from JWT: {userIdClaim}"); 
                 return Task.CompletedTask;
             },
             OnAuthenticationFailed = context =>
@@ -59,10 +57,10 @@ using System.Security.Claims;
     });
 
 
-// ✅ Register Services
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDishService, DishService>();
-builder.Services.AddScoped<IBasketService, BasketService>();
+builder.Services.AddScoped<ICartService, CartService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -99,7 +97,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// ✅ Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

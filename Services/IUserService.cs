@@ -9,6 +9,7 @@ namespace sambackend.Services
         Task<User> RegisterUserAsync(RegisterDto registerDto);
        Task<string> GenerateJwtTokenAsync(User user); 
         Task<User> LoginUserAsync(LoginDto loginDto);
+        Task LogoutUserAsync(Guid userId);
         Task<User> GetUserProfileAsync(Guid userId);
         Task<UserResponse> UpdateUserProfileAsync( UserProfileEdit userProfileEdit);
 

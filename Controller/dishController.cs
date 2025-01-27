@@ -20,9 +20,6 @@ namespace sambackend.Controllers
             _dishService = dishService;
         }
 
-        // Get all dishes
-
-
           [HttpGet]
 [SwaggerOperation(Summary = "Get a list of dishes (menu) with filtering, sorting, and pagination.")]
 [SwaggerResponse(200, "Success", typeof(List<Dish>))]
@@ -48,16 +45,16 @@ public async Task<IActionResult> GetDishes(
 [SwaggerResponse(404, "Dish not found.")]
 public async Task<IActionResult> GetDishById([FromRoute] Guid id)
 {
-    // Call the service to retrieve the dish by ID
+    
     var dish = await _dishService.GetDishByIdAsync(id);
 
     if (dish == null)
     {
-        // Return 404 if the dish is not found
+       
         return NotFound("Dish not found."); 
     }
 
-    // Return the dish if found
+    
     return Ok(dish);
 }
 

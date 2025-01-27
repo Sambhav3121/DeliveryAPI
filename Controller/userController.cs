@@ -77,7 +77,25 @@ public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
 }
 
 
+[HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            try
+            {
+                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userId))
+                    return Unauthorized(new { message = "User not logged in." });
 
+                await _userService.LogoutUserAsync(Guid.Parse(userId));
+
+                return Ok(new { status = "success", message = "User logged out successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An error occurred during logout.", details = ex.Message });
+            }
+        }
 
 [HttpGet("profile")]
 [Authorize]
