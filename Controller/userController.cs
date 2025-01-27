@@ -5,6 +5,7 @@ using sambackend.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.Extensions.Logging;
+using sambackend.Dto;
 
 namespace sambackend.Controllers
 {
@@ -109,6 +110,37 @@ public async Task<IActionResult> GetUserProfile()
         }
     });
 }
+ 
+      [HttpPut("profile")]
+      [Authorize]
+        public async Task<IActionResult> UpdateUserProfile([FromBody] UserProfileEdit userProfileEdit)
+       {
+          if (!ModelState.IsValid)
+        return BadRequest(new { message = "Invalid input data." });
+
+       string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+        return Unauthorized(new { message = "Please log in to the system first." });
+
+        try
+        {
+        var result = await _userService.UpdateUserProfileAsync(userProfileEdit);
+        if (result == null)
+            return NotFound(new { message = "User not found." });
+
+        return Ok(result);
+         }
+         catch (InvalidOperationException ex)
+        {
+        return BadRequest(new { message = "Invalid operation: " + ex.Message });
+         }
+         catch (Exception ex)
+        {
+        return StatusCode(500, new { message = "An internal server error occurred.", details = ex.Message });
+        }
+    }
+
+
     }
 }
 

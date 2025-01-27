@@ -9,8 +9,6 @@ namespace sambackend.Models
         public Guid DishId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; }
-
-        // Navigation properties
         public Basket Basket { get; set; }
         public Dish Dish { get; set; }
     }

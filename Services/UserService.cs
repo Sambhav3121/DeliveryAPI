@@ -11,6 +11,7 @@ using Microsoft.Extensions.Options;
 using BCrypt.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using sambackend.Dto;
 
 namespace sambackend.Services
 {
@@ -128,5 +129,33 @@ namespace sambackend.Services
         {
             return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
         }
+         
+         public async Task<UserResponse> UpdateUserProfileAsync( UserProfileEdit userProfileEdit)
+        {
+            var userProfile = await _context.Users.FirstOrDefaultAsync(u=>u.Email == userProfileEdit.Email);
+            if (userProfile == null)
+            { 
+                return new UserResponse 
+                {
+                    Status= "Failure",
+                    Message = "User not found"
+                };
+            }
+               userProfile.FullName = userProfileEdit.FullName;
+               userProfile.Address = userProfileEdit.Address;
+               userProfile.BirthDate = userProfileEdit.BirthDate;
+               userProfile.PhoneNumber = userProfileEdit.PhoneNumber;
+
+               await _context.SaveChangesAsync();
+
+            return new UserResponse
+            {
+                Status = "Success",
+                Message = "User Updated successfully."
+            };
+            } 
+        }
+        
+
     }
-}
+    
