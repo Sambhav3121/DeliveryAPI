@@ -10,13 +10,15 @@ namespace sambackend.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Dish> Dishes { get; set; }
-        public DbSet<Cart> Carts{ get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<Order> Orders { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-           
+            modelBuilder.Entity<Order>().ToTable("Order");
+
             modelBuilder.Entity<Dish>()
                 .Property(d => d.Id)
                 .ValueGeneratedOnAdd();

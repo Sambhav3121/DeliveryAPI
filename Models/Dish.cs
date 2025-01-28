@@ -1,7 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
-using sambackend.Data;
-using sambackend;  
 
 namespace sambackend.Models
 {
@@ -25,6 +22,4 @@ namespace sambackend.Models
 
         public DishCategory Category { get; set; } 
     }
-
 }
-

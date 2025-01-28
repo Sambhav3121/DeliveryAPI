@@ -56,4 +56,34 @@ public class DishService : IDishService
     {
         return await _context.Dishes.FindAsync(dishId);
     }
+
+    public async Task<bool> CanUserRateDishAsync(Guid dishId, string userId)
+    {
+        var dishExists = await _context.Dishes.AnyAsync(d => d.Id == dishId);
+        if (!dishExists)
+            return false;
+
+        var userHasOrderedDish = await _context.Orders
+            .Include(o => o.userId)
+            .AnyAsync(o => o.userId == userId);
+
+        return userHasOrderedDish;
+    }
+
+    public async Task<bool> RateDishAsync(Guid dishId, string userId, int ratingScore)
+    {
+        var dish = await _context.Dishes.FindAsync(dishId);
+        if (dish == null)
+            return false;
+
+        var previousRating = await _context.Dishes
+            .Where(d => d.Id == dishId)
+            .Select(d => d.Rating)
+            .FirstOrDefaultAsync();
+
+        dish.Rating = previousRating == 0 ? ratingScore : (previousRating + ratingScore) / 2;
+        
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
