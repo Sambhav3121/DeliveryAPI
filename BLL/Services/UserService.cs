@@ -12,6 +12,8 @@ using BCrypt.Net;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using sambackend.Dto;
+using System.ComponentModel.DataAnnotations;
+
 
 namespace sambackend.Services
 {
@@ -29,42 +31,56 @@ namespace sambackend.Services
         }
 
         public async Task<User> RegisterUserAsync(RegisterDto registerDto)
-        {
-            if (string.IsNullOrEmpty(registerDto.Email) || string.IsNullOrEmpty(registerDto.Password) || string.IsNullOrEmpty(registerDto.FullName))
-            {
-                throw new ArgumentException("Missing required fields.");
-            }
+{
+    if (string.IsNullOrWhiteSpace(registerDto.Email) || 
+        string.IsNullOrWhiteSpace(registerDto.Password) || 
+        string.IsNullOrWhiteSpace(registerDto.FullName))
+    {
+        throw new ArgumentException("Missing required fields.");
+    }
 
-            if (!IsValidEmail(registerDto.Email))
-            {
-                throw new InvalidEmailException("Invalid email format.");
-            }
+    if (!new EmailAddressAttribute().IsValid(registerDto.Email))
+    {
+        throw new InvalidEmailException("Invalid email format.");
+    }
 
-            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
-            {
-                throw new Exception("Email is already in use.");
-            }
+    if (!Regex.IsMatch(registerDto.Gender, "^(Male|Female|Other)$"))
+    {
+        throw new ArgumentException("Gender must be 'Male', 'Female', or 'Other'.");
+    }
 
-            var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-            var user = new User
-            {
-                Id = Guid.NewGuid(),
-                FullName = registerDto.FullName,
-                Email = registerDto.Email,
-                PasswordHash = passwordHash,
-                Address = registerDto.Address,
-                BirthDate = registerDto.BirthDate,
-                Gender = registerDto.Gender,
-                PhoneNumber = registerDto.PhoneNumber
-            };
+    if (!Regex.IsMatch(registerDto.Password, @"^(?=.*\d).{6,}$"))
+    {
+        throw new ArgumentException("Password must be at least 6 characters long and contain at least one numeric digit.");
+    }
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+    if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+    {
+        throw new Exception("Email is already in use.");
+    }
 
-            _logger.LogInformation($"User registered successfully: {user.Email}");
+    var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+    
+    var user = new User
+    {
+        Id = Guid.NewGuid(),
+        FullName = registerDto.FullName,
+        Email = registerDto.Email,
+        PasswordHash = passwordHash,
+        Address = registerDto.Address,
+        BirthDate = registerDto.BirthDate,
+        Gender = registerDto.Gender,
+        PhoneNumber = registerDto.PhoneNumber
+    };
 
-            return user;
-        }
+    _context.Users.Add(user);
+    await _context.SaveChangesAsync();
+
+    _logger.LogInformation($"User registered successfully: {user.Email}");
+
+    return user;
+}
+
 
        public Task<string> GenerateJwtTokenAsync(User user)
        {
@@ -99,17 +115,28 @@ namespace sambackend.Services
         }
         
         public async Task<User> LoginUserAsync(LoginDto loginDto)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
-            {
-                _logger.LogWarning($"Failed login attempt for email: {loginDto.Email}");
-                throw new InvalidCredentialsException("Invalid email or password.");
-            }
+{
+    if (string.IsNullOrWhiteSpace(loginDto.Email) || string.IsNullOrWhiteSpace(loginDto.Password))
+    {
+        throw new ArgumentException("Email and Password are required.");
+    }
 
-            _logger.LogInformation($"User logged in: {user.Email}");
-            return user;
-        }
+    if (!new EmailAddressAttribute().IsValid(loginDto.Email))
+    {
+        throw new InvalidEmailException("Invalid email format. Please use a valid email like user@example.com.");
+    }
+
+    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+    if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+    {
+        _logger.LogWarning($"Failed login attempt for email: {loginDto.Email}");
+        throw new InvalidCredentialsException("Invalid email or password.");
+    }
+
+    _logger.LogInformation($"User logged in: {user.Email}");
+    return user;
+}
+
 
       public async Task LogoutUserAsync(Guid userId)
 {

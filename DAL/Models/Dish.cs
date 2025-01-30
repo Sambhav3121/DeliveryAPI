@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace sambackend.Models
@@ -18,8 +19,11 @@ namespace sambackend.Models
 
         public bool Vegetarian { get; set; } 
 
-        public double Rating { get; set; }
+        public double Rating { get; set; } // Average rating
 
         public DishCategory Category { get; set; } 
+
+        // Navigation property for ratings
+        public List<DishRating> Ratings { get; set; } = new List<DishRating>();
     }
 }

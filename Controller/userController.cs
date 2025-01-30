@@ -23,39 +23,67 @@ namespace sambackend.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+{
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(new 
+        { 
+            status = "error", 
+            message = "Invalid registration data.", 
+            errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) 
+        });
+    }
+
+    try
+    {
+        var user = await _userService.RegisterUserAsync(registerDto);
+        var token = await _userService.GenerateJwtTokenAsync(user);
+
+        return Ok(new
         {
-            if (!ModelState.IsValid)
+            status = "Success",
+            message = "Registration successful.",
+            user = new
             {
-                return BadRequest(new { message = "Invalid registration data.", errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) });
-            }
+                fullName = user.FullName,
+                email = user.Email,
+                address = user.Address,
+                birthDate = user.BirthDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), 
+                gender = user.Gender,
+                phoneNumber = user.PhoneNumber
+            },
+            token = token
+        });
+    }
+    catch (InvalidEmailException ex)
+    {
+        return BadRequest(new { status = "error", message = ex.Message });
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(new { status = "error", message = ex.Message });
+    }
+    catch (Exception ex)
+    {
+        return StatusCode(500, new { status = "error", message = "An error occurred during registration.", details = ex.Message });
+    }
+}
 
-            try
-            {
-                var user = await _userService.RegisterUserAsync(registerDto);
-                var token = await _userService.GenerateJwtTokenAsync(user);
-
-                return Ok(new
-                {
-                    status = "Success",
-                    message = "Registration successful.",
-                    token = token
-                });
-            }
-            catch (InvalidEmailException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "An error occurred during registration.", details = ex.Message });
-            }
-        }
 
         [HttpPost("login")]
-      
-public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
-{
+      public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+   {
+    if (!ModelState.IsValid)
+    {
+        return BadRequest(new 
+        { 
+            status = "error", 
+            message = "Invalid login data.", 
+            errors = ModelState.Values.SelectMany(v => v.Errors.Select(e => e.ErrorMessage)) 
+        });
+    }
+
     try
     {
         var user = await _userService.LoginUserAsync(loginDto);
@@ -63,12 +91,18 @@ public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
 
         return Ok(new 
         { 
-            token
+            status = "Success",
+            message = "Login successful.",
+            token = token
         });
     }
     catch (InvalidCredentialsException)
     {
         return Unauthorized(new { message = "Invalid email or password." });
+    }
+    catch (InvalidEmailException ex)
+    {
+        return BadRequest(new { message = ex.Message });
     }
     catch (Exception ex)
     {
