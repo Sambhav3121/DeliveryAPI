@@ -8,9 +8,8 @@ namespace sambackend.Models
     {
         [Key]
         public Guid Id { get; set; }
-
-        public string deliveryTime { get; set; }
-        public string OrderTime { get; set; }
+        public DateTime deliveryTime { get; set; }
+        public DateTime OrderTime { get; set; }
         public OrderStatus status { get; set; }
         public int price { get; set; }
         public string address { get; set; }

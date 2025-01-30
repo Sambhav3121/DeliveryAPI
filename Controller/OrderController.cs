@@ -8,7 +8,7 @@ namespace sambackend.Controllers
 {
     [Route("api/order")]
     [ApiController]
-    [Authorize]  // Ensure authentication
+    [Authorize]  
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;

@@ -73,11 +73,11 @@ namespace sambackend.Services
         throw new ArgumentException("Invalid user data for token generation.");
            }
 
-          Console.WriteLine($"Generating token for user: {user.Id} (Type: {user.Id.GetType()})"); // Debugging
+          Console.WriteLine($"Generating token for user: {user.Id} (Type: {user.Id.GetType()})"); 
 
            var claims = new[]
         {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),  // Make sure this is the first claim
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),  
         new Claim(JwtRegisteredClaimNames.Sub, user.Email),
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         new Claim(ClaimTypes.Email, user.Email)
@@ -116,10 +116,7 @@ namespace sambackend.Services
     var user = await _context.Users.FindAsync(userId);
     if (user == null)
         throw new Exception("User not found.");
-
-    
 }
-
 
         public async Task<User> GetUserProfileAsync(Guid userId)
         {

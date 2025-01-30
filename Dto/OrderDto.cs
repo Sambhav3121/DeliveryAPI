@@ -10,8 +10,8 @@ namespace sambackend.Dto
     public class OrderDto
     {
         public Guid Id {get; set;}
-        public string deliveryTime { get; set; }
-        public string orderTime { get; set; }
+        public DateTime deliveryTime { get; set; }
+        public DateTime orderTime { get; set; }
         public OrderStatus status { get; set; }
         public int price { get; set; }
         public string address { get; set; }

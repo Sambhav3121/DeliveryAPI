@@ -16,17 +16,15 @@ namespace sambackend.Services
 
         public async Task<OrderDto?> GetOrderByIdAsync(Guid orderId)
         {
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId);
-
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
             if (order == null)
                 return null;
 
             return new OrderDto
             {
                 Id = order.Id,
-                deliveryTime = order.deliveryTime,
-                orderTime = order.OrderTime,
+                deliveryTime = order.deliveryTime,  
+                orderTime = order.OrderTime,  
                 status = order.status,
                 price = order.price,
                 address = order.address
@@ -40,8 +38,8 @@ namespace sambackend.Services
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
-                    deliveryTime = o.deliveryTime,
-                    orderTime = o.OrderTime,
+                    deliveryTime = o.deliveryTime, 
+                    orderTime = o.OrderTime,  
                     status = o.status,
                     price = o.price,
                     address = o.address
@@ -54,9 +52,9 @@ namespace sambackend.Services
             var order = new Order
             {
                 Id = Guid.NewGuid(),
-                deliveryTime = orderDto.deliveryTime,
-                OrderTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
-                status = OrderStatus.Pending,  // 👈 Ensure this is defined
+                deliveryTime = orderDto.deliveryTime,  
+                OrderTime = DateTime.UtcNow,  
+                status = OrderStatus.Pending,  
                 price = 0, 
                 address = orderDto.address,
                 userId = userId
@@ -68,8 +66,8 @@ namespace sambackend.Services
             return new OrderDto
             {
                 Id = order.Id,
-                deliveryTime = order.deliveryTime,
-                orderTime = order.OrderTime,
+                deliveryTime = order.deliveryTime, 
+                orderTime = order.OrderTime,  
                 status = order.status,
                 price = order.price,
                 address = order.address

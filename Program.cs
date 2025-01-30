@@ -56,8 +56,6 @@ using System.Security.Claims;
         };
     });
 
-
-
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<ICartService, CartService>();

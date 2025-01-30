@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
-namespace sambackend.Dto
+namespace sambackend.Dto 
 {
-	public class OrderCreateDto
-	{
-        public string deliveryTime { get; set; }
+    public class OrderCreateDto
+    {
+        [Required]
+        public DateTime deliveryTime { get; set; }  
+
+        [Required]
         public string address { get; set; }
     }
 }
