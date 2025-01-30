@@ -10,7 +10,3 @@ namespace sambackend.Models
         public string PhoneNumber { get; set; }
     }
 }
-
-
-
-

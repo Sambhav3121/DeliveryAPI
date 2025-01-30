@@ -19,7 +19,7 @@ namespace sambackend.Models
 
         public bool Vegetarian { get; set; } 
 
-        public double Rating { get; set; } // Average rating
+        public double Rating { get; set; } 
 
         public DishCategory Category { get; set; } 
 

@@ -11,7 +11,7 @@ namespace sambackend.Controllers
 {
     [ApiController]
     [Route("api/basket")]
-    [Authorize] // Requires authentication
+    [Authorize] 
     public class CartController : ControllerBase
     {
         private readonly ICartService _cartService;

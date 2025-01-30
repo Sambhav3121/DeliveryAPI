@@ -8,10 +8,10 @@ namespace sambackend.Models
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
-        public Guid DishId { get; set; } // Foreign key
+        public Guid DishId { get; set; } 
 
         [Required]
-        public string UserId { get; set; } // User who rated
+        public string UserId { get; set; } 
 
         [Required]
         [Range(1, 5, ErrorMessage = "Rating must be between 1 and 5.")]
