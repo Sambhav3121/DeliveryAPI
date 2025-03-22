@@ -23,7 +23,6 @@ namespace sambackend.Models
 
         public DishCategory Category { get; set; } 
 
-        // Navigation property for ratings
         public List<DishRating> Ratings { get; set; } = new List<DishRating>();
     }
 }
