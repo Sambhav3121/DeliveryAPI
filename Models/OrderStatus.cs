@@ -5,6 +5,6 @@ namespace sambackend.Models
         Pending,
         InProcess,
         Delivered,
-        Cancelled
+        Cancelled  
     }
 }

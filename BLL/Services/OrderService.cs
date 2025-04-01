@@ -23,8 +23,8 @@ namespace sambackend.Services
             return new OrderDto
             {
                 Id = order.Id,
-                deliveryTime = order.deliveryTime,  
-                orderTime = order.OrderTime,  
+                deliveryTime = order.deliveryTime,
+                orderTime = order.OrderTime,
                 status = order.status,
                 price = order.price,
                 address = order.address
@@ -38,8 +38,8 @@ namespace sambackend.Services
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
-                    deliveryTime = o.deliveryTime, 
-                    orderTime = o.OrderTime,  
+                    deliveryTime = o.deliveryTime,
+                    orderTime = o.OrderTime,
                     status = o.status,
                     price = o.price,
                     address = o.address
@@ -52,10 +52,10 @@ namespace sambackend.Services
             var order = new Order
             {
                 Id = Guid.NewGuid(),
-                deliveryTime = orderDto.deliveryTime,  
-                OrderTime = DateTime.UtcNow,  
-                status = OrderStatus.Pending,  
-                price = 0, 
+                deliveryTime = orderDto.deliveryTime,
+                OrderTime = DateTime.UtcNow,
+                status = OrderStatus.Pending,
+                price = 0,
                 address = orderDto.address,
                 userId = userId
             };
@@ -66,8 +66,8 @@ namespace sambackend.Services
             return new OrderDto
             {
                 Id = order.Id,
-                deliveryTime = order.deliveryTime, 
-                orderTime = order.OrderTime,  
+                deliveryTime = order.deliveryTime,
+                orderTime = order.OrderTime,
                 status = order.status,
                 price = order.price,
                 address = order.address
@@ -81,6 +81,17 @@ namespace sambackend.Services
                 return false;
 
             order.status = OrderStatus.Delivered;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> CancelOrderAsync(Guid orderId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId);
+            if (order == null || order.status == OrderStatus.Delivered || order.status == OrderStatus.Cancelled)
+                return false;
+
+            order.status = OrderStatus.Cancelled;
             await _context.SaveChangesAsync();
             return true;
         }

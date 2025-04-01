@@ -63,5 +63,16 @@ namespace sambackend.Controllers
 
             return Ok(new { status = "Success", message = "Order delivery confirmed." });
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> CancelOrder(Guid id)
+        {
+            var result = await _orderService.CancelOrderAsync(id);
+            if (!result)
+                return NotFound(new { status = "Error", message = "Order not found or already processed." });
+
+            return Ok(new { status = "Success", message = "Order has been canceled." });
+        }
     }
 }
