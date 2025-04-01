@@ -14,16 +14,15 @@ using Microsoft.Extensions.Logging;
 using sambackend.Dto;
 using System.ComponentModel.DataAnnotations;
 
-
 namespace sambackend.Services
 {
     public class UserService : IUserService
     {
         private readonly DataContext _context;
         private readonly JwtSettings _jwtSettings;
-        private readonly ILogger<UserService> _logger; 
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(DataContext context, IOptions<JwtSettings> jwtSettings, ILogger<UserService> logger) 
+        public UserService(DataContext context, IOptions<JwtSettings> jwtSettings, ILogger<UserService> logger)
         {
             _context = context;
             _jwtSettings = jwtSettings.Value;
@@ -31,119 +30,114 @@ namespace sambackend.Services
         }
 
         public async Task<User> RegisterUserAsync(RegisterDto registerDto)
-{
-    if (string.IsNullOrWhiteSpace(registerDto.Email) || 
-        string.IsNullOrWhiteSpace(registerDto.Password) || 
-        string.IsNullOrWhiteSpace(registerDto.FullName))
-    {
-        throw new ArgumentException("Missing required fields.");
-    }
-
-    if (!new EmailAddressAttribute().IsValid(registerDto.Email))
-    {
-        throw new InvalidEmailException("Invalid email format.");
-    }
-
-    if (!Regex.IsMatch(registerDto.Gender, "^(Male|Female|Other)$"))
-    {
-        throw new ArgumentException("Gender must be 'Male', 'Female', or 'Other'.");
-    }
-
-    if (!Regex.IsMatch(registerDto.Password, @"^(?=.*\d).{6,}$"))
-    {
-        throw new ArgumentException("Password must be at least 6 characters long and contain at least one numeric digit.");
-    }
-
-    if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
-    {
-        throw new Exception("Email is already in use.");
-    }
-
-    var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
-    
-    var user = new User
-    {
-        Id = Guid.NewGuid(),
-        FullName = registerDto.FullName,
-        Email = registerDto.Email,
-        PasswordHash = passwordHash,
-        Address = registerDto.Address,
-        BirthDate = registerDto.BirthDate,
-        Gender = registerDto.Gender,
-        PhoneNumber = registerDto.PhoneNumber
-    };
-
-    _context.Users.Add(user);
-    await _context.SaveChangesAsync();
-
-    _logger.LogInformation($"User registered successfully: {user.Email}");
-
-    return user;
-}
-
-
-       public Task<string> GenerateJwtTokenAsync(User user)
-       {
-         if (user == null || user.Id == Guid.Empty)
-          {
-        throw new ArgumentException("Invalid user data for token generation.");
-           }
-
-          Console.WriteLine($"Generating token for user: {user.Id} (Type: {user.Id.GetType()})"); 
-
-           var claims = new[]
         {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),  
-        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        new Claim(ClaimTypes.Email, user.Email)
-         };
+            if (string.IsNullOrWhiteSpace(registerDto.Email) ||
+                string.IsNullOrWhiteSpace(registerDto.Password) ||
+                string.IsNullOrWhiteSpace(registerDto.FullName))
+            {
+                throw new ArgumentException("Missing required fields.");
+            }
 
-         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            if (!new EmailAddressAttribute().IsValid(registerDto.Email))
+            {
+                throw new InvalidEmailException("Invalid email format.");
+            }
 
-          var token = new JwtSecurityToken(
-        issuer: _jwtSettings.Issuer,
-        audience: _jwtSettings.Audience,
-        claims: claims,
-        expires: DateTime.UtcNow.AddHours(1),
-        signingCredentials: creds
-       );
+            if (!Regex.IsMatch(registerDto.Gender, "^(Male|Female|Other)$"))
+            {
+                throw new ArgumentException("Gender must be 'Male', 'Female', or 'Other'.");
+            }
 
-         _logger.LogInformation($"Generated token for user ID: {user.Id}");
-         return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
+            if (!Regex.IsMatch(registerDto.Password, @"^(?=.*\d).{6,}$"))
+            {
+                throw new ArgumentException("Password must be at least 6 characters long and contain at least one numeric digit.");
+            }
+
+            if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+            {
+                throw new Exception("Email is already in use.");
+            }
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password);
+
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                FullName = registerDto.FullName,
+                Email = registerDto.Email,
+                PasswordHash = passwordHash,
+                Address = registerDto.Address,
+                BirthDate = registerDto.BirthDate,
+                Gender = registerDto.Gender,
+                PhoneNumber = registerDto.PhoneNumber
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"User registered successfully: {user.Email}");
+            return user;
         }
-        
+
+        public Task<string> GenerateJwtTokenAsync(User user)
+        {
+            if (user == null || user.Id == Guid.Empty)
+            {
+                throw new ArgumentException("Invalid user data for token generation.");
+            }
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+
+            _logger.LogInformation($"Generated token for user ID: {user.Id}");
+            return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
+        }
+
         public async Task<User> LoginUserAsync(LoginDto loginDto)
-{
-    if (string.IsNullOrWhiteSpace(loginDto.Email) || string.IsNullOrWhiteSpace(loginDto.Password))
-    {
-        throw new ArgumentException("Email and Password are required.");
-    }
+        {
+            if (string.IsNullOrWhiteSpace(loginDto.Email) || string.IsNullOrWhiteSpace(loginDto.Password))
+            {
+                throw new ArgumentException("Email and Password are required.");
+            }
 
-    if (!new EmailAddressAttribute().IsValid(loginDto.Email))
-    {
-        throw new InvalidEmailException("Invalid email format. Please use a valid email like user@example.com.");
-    }
+            if (!new EmailAddressAttribute().IsValid(loginDto.Email))
+            {
+                throw new InvalidEmailException("Invalid email format.");
+            }
 
-    var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-    if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
-    {
-        _logger.LogWarning($"Failed login attempt for email: {loginDto.Email}");
-        throw new InvalidCredentialsException("Invalid email or password.");
-    }
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == loginDto.Email);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash))
+            {
+                _logger.LogWarning($"Failed login attempt for email: {loginDto.Email}");
+                throw new InvalidCredentialsException("Invalid email or password.");
+            }
 
-    _logger.LogInformation($"User logged in: {user.Email}");
-    return user;
-}
+            _logger.LogInformation($"User logged in: {user.Email}");
+            return user;
+        }
 
-
-      public async Task LogoutUserAsync(Guid userId)
-{
-    var user = await _context.Users.FindAsync(userId);
-    if (user == null)
-        throw new Exception("User not found.");
-}
+        public async Task LogoutUserAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+                throw new Exception("User not found.");
+        }
 
         public async Task<User> GetUserProfileAsync(Guid userId)
         {
@@ -153,43 +147,54 @@ namespace sambackend.Services
             if (user == null)
             {
                 _logger.LogWarning($"User profile not found for ID: {userId}");
-                return null; 
+                return null;
             }
 
             return user;
         }
 
-        private bool IsValidEmail(string email)
+       
+        public async Task<UserResponse> UpdateUserAsync(Guid userId, UserProfileEdit userProfileEdit)
         {
-            return Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-        }
-         
-         public async Task<UserResponse> UpdateUserProfileAsync( UserProfileEdit userProfileEdit)
-        {
-            var userProfile = await _context.Users.FirstOrDefaultAsync(u=>u.Email == userProfileEdit.Email);
+            var userProfile = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (userProfile == null)
-            { 
-                return new UserResponse 
+            {
+                return new UserResponse
                 {
-                    Status= "Failure",
+                    Status = "Failure",
                     Message = "User not found"
                 };
             }
-               userProfile.FullName = userProfileEdit.FullName;
-               userProfile.Address = userProfileEdit.Address;
-               userProfile.BirthDate = userProfileEdit.BirthDate;
-               userProfile.PhoneNumber = userProfileEdit.PhoneNumber;
 
-               await _context.SaveChangesAsync();
+        
+            userProfile.FullName = userProfileEdit.FullName;
+            userProfile.Address = userProfileEdit.Address;
+            userProfile.BirthDate = userProfileEdit.BirthDate;
+            userProfile.PhoneNumber = userProfileEdit.PhoneNumber;
+
+            await _context.SaveChangesAsync();
 
             return new UserResponse
             {
                 Status = "Success",
-                Message = "User Updated successfully."
+                Message = "User updated successfully."
             };
-            } 
         }
-        
 
+        public async Task<bool> DeleteUserAsync(Guid userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null)
+            {
+                _logger.LogWarning($"User with ID {userId} not found.");
+                return false;
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"User with ID {userId} deleted successfully.");
+            return true;
+        }
     }
-    
+}

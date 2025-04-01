@@ -130,7 +130,6 @@
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.csproj.CoreCompileInputs.cache
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.MvcApplicationPartsAssemblyInfo.cs
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.MvcApplicationPartsAssemblyInfo.cache
-/Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/sambackend.sourcelink.json
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/staticwebassets.build.json
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/staticwebassets.development.json
 /Users/sambhavbajaj/Desktop/samBackend/sambackend/obj/Debug/net8.0/staticwebassets/msbuild.sambackend.Microsoft.AspNetCore.StaticWebAssets.props
