@@ -46,41 +46,76 @@ namespace sambackend.Controllers
             }
             return Ok(dish);
         }
-        
-       [HttpGet("{id:guid}/rating/check")]
-       [Authorize]
-       [SwaggerOperation(Summary = "Check if the user can rate a dish.")]
-       [SwaggerResponse(200, "Success", typeof(bool))]
-      public async Task<IActionResult> CanUserRateDish([FromRoute] Guid id)
+
+        [HttpGet("{id:guid}/rating/check")]
+        [Authorize]
+        [SwaggerOperation(Summary = "Check if the user can rate a dish.")]
+        [SwaggerResponse(200, "Success", typeof(bool))]
+        public async Task<IActionResult> CanUserRateDish([FromRoute] Guid id)
         {
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (userId == null)
-        return Unauthorized();
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
 
-    bool canRate = await _dishService.CanUserRateDishAsync(id, userId);
-    return Ok(new { canRate });
-     }
+            bool canRate = await _dishService.CanUserRateDishAsync(id, userId);
+            return Ok(new { canRate });
+        }
 
-      [HttpPost("{id:guid}/rating")]
-      [Authorize]
-      [SwaggerOperation(Summary = "Set a rating for a dish.")]
-       [SwaggerResponse(200, "Rating added successfully.")]
-       [SwaggerResponse(400, "Invalid rating value.")]
-      public async Task<IActionResult> RateDish([FromRoute] Guid id, [FromQuery] int ratingScore)
-    {
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    if (userId == null)
-        return Unauthorized();
+        [HttpPost("{id:guid}/rating")]
+        [Authorize]
+        [SwaggerOperation(Summary = "Set a rating for a dish.")]
+        [SwaggerResponse(200, "Rating added successfully.")]
+        [SwaggerResponse(400, "Invalid rating value.")]
+        public async Task<IActionResult> RateDish([FromRoute] Guid id, [FromQuery] int ratingScore)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
 
-    if (ratingScore < 1 || ratingScore > 5)
-        return BadRequest(new { status = "Error", message = "Rating must be between 1 and 5." });
+            if (ratingScore < 1 || ratingScore > 5)
+                return BadRequest(new { status = "Error", message = "Rating must be between 1 and 5." });
 
-    var success = await _dishService.RateDishAsync(id, userId, ratingScore);
-    if (!success)
-        return NotFound(new { status = "Error", message = "Dish not found or already rated." });
+            var success = await _dishService.RateDishAsync(id, userId, ratingScore);
+            if (!success)
+                return NotFound(new { status = "Error", message = "Dish not found or already rated." });
 
-    return Ok(new { status = "Success", message = "Rating added successfully." });
-    }
+            return Ok(new { status = "Success", message = "Rating added successfully." });
+        }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [SwaggerOperation(Summary = "Add a new dish to the menu.")]
+        [SwaggerResponse(201, "Dish added successfully.")]
+        [SwaggerResponse(400, "Invalid dish data.")]
+        public async Task<IActionResult> AddDish([FromBody] Dish newDish)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { status = "Error", message = "Invalid dish data." });
+
+            var isAdded = await _dishService.AddDishAsync(newDish);
+            if (!isAdded)
+                return BadRequest(new { status = "Error", message = "Failed to add dish." });
+
+            // Retrieve the added dish by ID
+            var addedDish = await _dishService.GetDishByIdAsync(newDish.Id);
+            if (addedDish == null)
+                return NotFound(new { status = "Error", message = "Dish was not added." });
+
+            return CreatedAtAction(nameof(GetDishById), new { id = addedDish.Id }, addedDish);
+        }
+
+        [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "Admin")]
+        [SwaggerOperation(Summary = "Delete a dish from the menu.")]
+        [SwaggerResponse(200, "Dish deleted successfully.")]
+        [SwaggerResponse(404, "Dish not found.")]
+        public async Task<IActionResult> DeleteDish([FromRoute] Guid id)
+        {
+            var success = await _dishService.DeleteDishAsync(id);
+            if (!success)
+                return NotFound(new { status = "Error", message = "Dish not found." });
+
+            return Ok(new { status = "Success", message = "Dish deleted successfully." });
+        }
     }
 }

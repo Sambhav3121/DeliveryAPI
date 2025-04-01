@@ -47,9 +47,7 @@ public class DishService : IDishService
         };
 
         int skip = (page - 1) * pageSize;
-        var pagedDishes = await query.Skip(skip).Take(pageSize).ToListAsync();
-
-        return pagedDishes;
+        return await query.Skip(skip).Take(pageSize).ToListAsync();
     }
 
     public async Task<Dish?> GetDishByIdAsync(Guid dishId)
@@ -83,6 +81,33 @@ public class DishService : IDishService
 
         dish.Rating = previousRating == 0 ? ratingScore : (previousRating + ratingScore) / 2;
         
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    // ✅ Updated to match the interface
+    public async Task<bool> AddDishAsync(Dish newDish)
+    {
+        try
+        {
+            newDish.Id = Guid.NewGuid(); // Ensure unique ID
+            await _context.Dishes.AddAsync(newDish);
+            await _context.SaveChangesAsync();
+            return true; // Return true on success
+        }
+        catch
+        {
+            return false; // Return false on failure
+        }
+    }
+
+    public async Task<bool> DeleteDishAsync(Guid dishId)
+    {
+        var dish = await _context.Dishes.FindAsync(dishId);
+        if (dish == null)
+            return false;
+
+        _context.Dishes.Remove(dish);
         await _context.SaveChangesAsync();
         return true;
     }

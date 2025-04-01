@@ -8,5 +8,8 @@ namespace sambackend.Services
         Task<Dish?> GetDishByIdAsync(Guid dishId);
         Task<bool> CanUserRateDishAsync(Guid dishId, string userId);
         Task<bool> RateDishAsync(Guid dishId, string userId, int ratingScore);
+        Task<bool> AddDishAsync(Dish dish);
+        Task<bool> DeleteDishAsync(Guid id);
+
     }
 }
